@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stim-mcp-server"
+version = "0.1.0"
+description = "MCP server exposing Google's Stim quantum stabilizer circuit library as LLM tools"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "stim>=1.14.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.scripts]
+stim-mcp-server = "stim_mcp_server.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stim_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
