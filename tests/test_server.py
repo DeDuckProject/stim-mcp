@@ -6,6 +6,7 @@ import json
 
 import pytest
 import stim
+from mcp.server.fastmcp import Image
 
 from stim_mcp_server.circuit_store import CircuitStore
 from stim_mcp_server.server import (
@@ -210,11 +211,26 @@ class TestGetCircuitDiagram:
         result = json.loads(get_circuit_diagram(cid, diagram_type="timeline"))
         assert result["success"] is True
 
-    def test_svg_diagram(self):
+    def test_svg_diagram_returns_image(self):
         cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
-        result = json.loads(get_circuit_diagram(cid, diagram_type="svg"))
+        result = get_circuit_diagram(cid, diagram_type="svg")
+        assert isinstance(result, Image)
+        assert result._mime_type == "image/svg+xml"
+        assert b"<svg" in result.data.lower() or len(result.data) > 0
+
+    def test_crumble_url(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(get_circuit_diagram(cid, diagram_type="crumble"))
         assert result["success"] is True
-        assert "<svg" in result["diagram"].lower() or len(result["diagram"]) > 0
+        assert "url" in result
+        assert "algassert.com/crumble" in result["url"]
+
+    def test_crumble_is_default(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(get_circuit_diagram(cid))
+        assert result["success"] is True
+        assert result["format"] == "crumble"
+        assert "url" in result
 
     def test_missing_circuit(self):
         result = json.loads(get_circuit_diagram("ghost", diagram_type="text"))
