@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Literal
 
 import stim
@@ -384,7 +385,31 @@ def resource_stats(circuit_id: str) -> str:
 
 
 def main() -> None:
-    mcp.run(transport="stdio")
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+
+    if transport == "stdio":
+        mcp.run(transport="stdio")
+    else:
+        from starlette.middleware.cors import CORSMiddleware
+        from mcp.server.streamable_http import TransportSecuritySettings
+        import uvicorn
+
+        host = os.environ.get("MCP_HOST", "0.0.0.0")
+        port = int(os.environ.get("MCP_PORT", "8080"))
+
+        # Disable localhost-only DNS rebinding protection for remote deployments
+        mcp.settings.transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False,
+        )
+
+        app = mcp.streamable_http_app()
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+        uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
