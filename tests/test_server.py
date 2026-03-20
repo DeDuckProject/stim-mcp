@@ -215,8 +215,8 @@ class TestGetCircuitDiagram:
         cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
         result = get_circuit_diagram(cid, diagram_type="svg")
         assert isinstance(result, Image)
-        assert result._mime_type == "image/svg+xml"
-        assert b"<svg" in result.data.lower() or len(result.data) > 0
+        assert result._mime_type == "image/png"
+        assert len(result.data) > 0
 
     def test_crumble_url(self):
         cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]

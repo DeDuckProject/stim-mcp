@@ -6,6 +6,7 @@ import json
 import os
 from typing import Any, Literal
 
+import cairosvg
 import stim
 from mcp.server.fastmcp import FastMCP, Image
 
@@ -268,7 +269,8 @@ def get_circuit_diagram(
     if diagram_type == "svg":
         try:
             svg_str = str(circuit.diagram(type="timeline-svg"))
-            return Image(data=svg_str.encode("utf-8"), format="svg+xml")
+            png_bytes = cairosvg.svg2png(bytestring=svg_str.encode("utf-8"))
+            return Image(data=png_bytes, format="png")
         except Exception as exc:
             return json.dumps({"success": False, "error": str(exc)})
 
