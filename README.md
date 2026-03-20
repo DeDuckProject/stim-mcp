@@ -53,7 +53,7 @@ Needs [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 No cloning needed. Configure your MCP client (see below) and `uvx` handles the rest on first run.
 
-### From source
+### From source (development)
 
 ```bash
 git clone https://github.com/DeDuckProject/stim-mcp
@@ -88,17 +88,18 @@ Replace `/path/to/uvx` with the output of `which uvx`.
 claude mcp add stim -- /path/to/uvx --from stim-mcp-server stim-mcp-server
 ```
 
+Replace `/path/to/uvx` with the output of `which uvx`.
+
+### From source (development)
+
+```bash
+claude mcp add stim -- /path/to/uv run --directory /path/to/stim-mcp stim-mcp-server
+```
+
 ### Stdio (direct)
 
 ```bash
 uv run stim-mcp-server
-```
-
-Or after installing:
-
-```bash
-pip install .
-stim-mcp-server
 ```
 
 ### HTTP / SSE (local testing)
