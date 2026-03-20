@@ -122,10 +122,6 @@ gcloud run deploy stim-mcp \
 `--max-instances 1` keeps circuit sessions consistent (in-memory store).
 `--min-instances 0` enables scale-to-zero for cost savings.
 
-### Cost
-
-Within Google Cloud Run's free tier (2M requests/month, 360K GB-seconds), this server costs **$0/month** for typical low-traffic use.
-
 ## Environment variables
 
 | Variable | Default | Description |
