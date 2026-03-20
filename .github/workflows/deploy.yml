@@ -24,8 +24,6 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -33,11 +31,10 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Build package
-        run: uv build
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypa-publish@release/v1
+      - name: Build and publish to PyPI
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
   deploy:
     needs: test
