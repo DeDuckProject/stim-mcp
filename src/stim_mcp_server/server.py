@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Literal
 
 import stim
@@ -384,7 +385,25 @@ def resource_stats(circuit_id: str) -> str:
 
 
 def main() -> None:
-    mcp.run(transport="stdio")
+    transport = os.environ.get("MCP_TRANSPORT", "stdio")
+
+    if transport == "stdio":
+        mcp.run(transport="stdio")
+    else:
+        from starlette.middleware.cors import CORSMiddleware
+        import uvicorn
+
+        host = os.environ.get("MCP_HOST", "0.0.0.0")
+        port = int(os.environ.get("MCP_PORT", "8080"))
+
+        app = mcp.sse_app()
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+        uvicorn.run(app, host=host, port=port)
 
 
 if __name__ == "__main__":
