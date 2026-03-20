@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Literal
+from typing import Any, Literal
 
+import cairosvg
 import stim
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP, Image
 
 from .circuit_store import CircuitStore
 
@@ -227,19 +228,22 @@ def analyze_errors(circuit_id: str) -> str:
 @mcp.tool()
 def get_circuit_diagram(
     circuit_id: str,
-    diagram_type: Literal["text", "svg", "timeline"] = "text",
-) -> str:
+    diagram_type: Literal["text", "svg", "timeline", "crumble"] = "crumble",
+) -> Any:
     """Generate a visual or textual representation of the circuit.
 
     Args:
         circuit_id: An active circuit session ID.
         diagram_type: One of:
+            - 'crumble'  → URL to interactive Crumble visualizer (default, most token-efficient)
             - 'text'     → ASCII timeline diagram
             - 'timeline' → alias for 'text'
-            - 'svg'      → SVG timeline image (returns SVG markup)
+            - 'svg'      → SVG timeline image (returned as an image, not markup)
 
     Returns:
-        JSON with 'diagram' (string content) and 'format' fields, or an error.
+        For 'crumble': JSON with a 'url' field linking to the Crumble editor.
+        For 'text'/'timeline': JSON with 'diagram' (ASCII string).
+        For 'svg': An image rendered by the client.
     """
     try:
         session = _store.get(circuit_id)
@@ -247,13 +251,31 @@ def get_circuit_diagram(
         return json.dumps({"success": False, "error": str(exc)})
 
     circuit = session.circuit
-    stim_type_map = {
-        "text": "timeline-text",
-        "timeline": "timeline-text",
-        "svg": "timeline-svg",
-    }
-    stim_diagram_type = stim_type_map.get(diagram_type, "timeline-text")
 
+    if diagram_type == "crumble":
+        try:
+            url = circuit.to_crumble_url()
+            return json.dumps(
+                {
+                    "success": True,
+                    "circuit_id": circuit_id,
+                    "format": "crumble",
+                    "url": url,
+                }
+            )
+        except Exception as exc:
+            return json.dumps({"success": False, "error": str(exc)})
+
+    if diagram_type == "svg":
+        try:
+            svg_str = str(circuit.diagram(type="timeline-svg"))
+            png_bytes = cairosvg.svg2png(bytestring=svg_str.encode("utf-8"))
+            return Image(data=png_bytes, format="png")
+        except Exception as exc:
+            return json.dumps({"success": False, "error": str(exc)})
+
+    # text / timeline
+    stim_diagram_type = "timeline-text"
     try:
         diagram = circuit.diagram(type=stim_diagram_type)
         return json.dumps(
