@@ -180,3 +180,18 @@ gcloud run deploy stim-mcp \
 uv sync
 uv run pytest
 ```
+
+## Releasing
+
+Pushing a `v*` tag to `master` triggers the full release pipeline (tests must pass first):
+
+- **PyPI** — package is built and published automatically
+- **Cloud Run** — server is deployed automatically
+
+```bash
+# bump version in pyproject.toml, then:
+git tag v0.x.y
+git push origin v0.x.y
+```
+
+Required GitHub secrets: `PYPI_API_TOKEN`, `GCP_SA_KEY`.
