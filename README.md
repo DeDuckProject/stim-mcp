@@ -23,7 +23,7 @@ A hosted instance runs on Google Cloud Run:
 
 ### Claude.ai
 
-Go to **Settings → Integrations → Add custom integration** and enter the URL above.
+Go to **Settings → Connectors → Go To Customize → Tap the "+" icon → Add custom connector** and the name "Stim" the URL above.
 
 ### Claude Code (CLI)
 
