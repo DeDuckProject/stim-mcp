@@ -13,6 +13,7 @@ MCP server wrapping [Google's Stim](https://github.com/quantumlib/Stim) stabiliz
 | `analyze_errors` | Build the Detector Error Model and find shortest logical error paths |
 | `get_circuit_diagram` | Return an ASCII, SVG, or timeline diagram |
 | `inject_noise` | Add depolarizing or X error noise to a circuit |
+| `generate_circuit` | Generate standard QEC circuits (surface, repetition, color codes) |
 
 ## Connecting to the remote server
 
