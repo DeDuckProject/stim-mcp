@@ -32,7 +32,7 @@ class TestCircuitStore:
         store = CircuitStore()
         circuit = stim.Circuit("H 0\nM 0")
         cid = store.create(circuit)
-        assert len(cid) == 8
+        assert len(cid) == 32
         session = store.get(cid)
         assert session.circuit == circuit
 
@@ -90,7 +90,7 @@ class TestCreateCircuit:
     def test_valid_circuit(self):
         result = json.loads(create_circuit(BELL_CIRCUIT))
         assert result["success"] is True
-        assert len(result["circuit_id"]) == 8
+        assert len(result["circuit_id"]) == 32
         assert result["num_qubits"] == 2
         assert result["num_measurements"] == 2
 
@@ -287,7 +287,7 @@ class TestGenerateCircuit:
     def test_repetition_code(self):
         result = json.loads(generate_circuit("repetition_code:memory", rounds=5, distance=3))
         assert result["success"] is True
-        assert len(result["circuit_id"]) == 8
+        assert len(result["circuit_id"]) == 32
         assert result["num_qubits"] > 0
         assert result["num_detectors"] > 0
         assert result["num_observables"] > 0

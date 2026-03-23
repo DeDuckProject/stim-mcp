@@ -23,7 +23,7 @@ class CircuitStore:
 
     def create(self, circuit: stim.Circuit) -> str:
         """Store a circuit and return a new session ID."""
-        circuit_id = uuid.uuid4().hex[:8]
+        circuit_id = uuid.uuid4().hex
         self._sessions[circuit_id] = CircuitSession(circuit=circuit)
         return circuit_id
 
