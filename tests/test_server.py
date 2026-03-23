@@ -9,15 +9,17 @@ import stim
 from mcp.server.fastmcp import Image
 
 from stim_mcp_server.circuit_store import CircuitStore
-from stim_mcp_server.server import (
-    analyze_errors,
-    append_operation,
+# Import server to trigger registration (sets _store in all tool modules)
+from stim_mcp_server.server import _store  # noqa: F401
+from stim_mcp_server.tools.health import hello_quantum
+from stim_mcp_server.tools.circuit_management import (
     create_circuit,
-    get_circuit_diagram,
-    hello_quantum,
-    inject_noise,
-    sample_circuit,
+    append_operation,
+    generate_circuit,
 )
+from stim_mcp_server.tools.simulation import sample_circuit
+from stim_mcp_server.tools.analysis import analyze_errors, inject_noise
+from stim_mcp_server.tools.visualization import get_circuit_diagram
 
 
 # ---------------------------------------------------------------------------
@@ -76,6 +78,7 @@ class TestHelloQuantum:
 # ---------------------------------------------------------------------------
 # create_circuit
 # ---------------------------------------------------------------------------
+
 
 BELL_CIRCUIT = "H 0\nCNOT 0 1\nM 0 1"
 REP_CODE = stim.Circuit.generated(
@@ -271,6 +274,73 @@ class TestInjectNoise:
         cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
         original_text = str(stim.Circuit(BELL_CIRCUIT))
         inject_noise(cid, probability=0.05)
-        # Original session must still hold the clean circuit
         from stim_mcp_server.server import _store
         assert str(_store.get(cid).circuit) == original_text
+
+
+# ---------------------------------------------------------------------------
+# generate_circuit
+# ---------------------------------------------------------------------------
+
+
+class TestGenerateCircuit:
+    def test_repetition_code(self):
+        result = json.loads(generate_circuit("repetition_code:memory", rounds=5, distance=3))
+        assert result["success"] is True
+        assert len(result["circuit_id"]) == 32
+        assert result["num_qubits"] > 0
+        assert result["num_detectors"] > 0
+        assert result["num_observables"] > 0
+        assert isinstance(result["circuit_text"], str)
+
+    def test_surface_code(self):
+        result = json.loads(
+            generate_circuit("surface_code:rotated_memory_z", rounds=3, distance=3)
+        )
+        assert result["success"] is True
+        assert result["num_qubits"] > 0
+        assert result["num_detectors"] > 0
+
+    def test_with_noise(self):
+        result = json.loads(
+            generate_circuit(
+                "repetition_code:memory",
+                rounds=3,
+                distance=3,
+                after_clifford_depolarization=0.001,
+                before_round_data_depolarization=0.001,
+                before_measure_flip_probability=0.001,
+                after_reset_flip_probability=0.001,
+            )
+        )
+        assert result["success"] is True
+
+    def test_invalid_code_task(self):
+        result = json.loads(generate_circuit("not_a_code:task", rounds=3, distance=3))
+        assert result["success"] is False
+        assert "error" in result
+        assert "supported_tasks" in result
+        assert isinstance(result["supported_tasks"], list)
+        assert len(result["supported_tasks"]) > 0
+
+    def test_generated_circuit_usable(self):
+        gen = json.loads(generate_circuit("repetition_code:memory", rounds=3, distance=3,
+                                          before_round_data_depolarization=0.01))
+        assert gen["success"] is True
+        cid = gen["circuit_id"]
+
+        # sample it
+        sample_result = json.loads(sample_circuit(cid, shots=100))
+        assert sample_result["success"] is True
+        assert sample_result["shots"] == 100
+        assert "logical_error_rates" in sample_result
+
+        # analyze it
+        analysis_result = json.loads(analyze_errors(cid))
+        assert analysis_result["success"] is True
+        assert analysis_result["num_errors"] > 0
+
+        # diagram it
+        diag_result = json.loads(get_circuit_diagram(cid, diagram_type="crumble"))
+        assert diag_result["success"] is True
+        assert "url" in diag_result
