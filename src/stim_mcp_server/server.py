@@ -37,6 +37,12 @@ def hello_quantum() -> str:
             "status": "ok",
             "stim_version": stim.__version__,
             "active_sessions": len(_store.list_ids()),
+            "privacy_notice": (
+                "This is a shared server. Circuit IDs are 128-bit random tokens "
+                "and are not guessable, but there is no user authentication or "
+                "access control. Do not use this server for sensitive circuits. "
+                "For private use, run the MCP server locally."
+            ),
         }
     )
 

@@ -166,6 +166,12 @@ gcloud run deploy stim-mcp \
 | `MCP_HOST` | `0.0.0.0` | Bind address for HTTP mode |
 | `MCP_PORT` | `8080` | Port for HTTP mode |
 
+## Privacy & Security
+
+Circuit IDs are 128-bit random tokens (UUID v4), making them practically impossible to guess. However, the shared server has **no authentication and no access control** — anyone who obtains a circuit ID can read and modify that circuit.
+
+**If you care about the privacy of your circuits, run the MCP server locally** (see [Running locally](#running-locally)). The remote server is intended for experimentation and learning, not sensitive work.
+
 ## Examples
 
 > "Create a Bell state and sample it 1000 times"
