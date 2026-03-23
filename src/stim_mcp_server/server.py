@@ -11,6 +11,7 @@ import stim
 from mcp.server.fastmcp import FastMCP, Image
 
 from .circuit_store import CircuitStore
+from .cleanup import start_cleanup_thread
 
 mcp = FastMCP(
     "stim-mcp-server",
@@ -95,6 +96,7 @@ def append_operation(circuit_id: str, operation_text: str) -> str:
     try:
         extension = stim.Circuit(operation_text)
         session.circuit += extension
+        _store.touch(circuit_id)
     except Exception as exc:
         return json.dumps({"success": False, "error": str(exc)})
 
@@ -407,6 +409,7 @@ def resource_stats(circuit_id: str) -> str:
 
 
 def main() -> None:
+    start_cleanup_thread(_store)
     transport = os.environ.get("MCP_TRANSPORT", "stdio")
 
     if transport == "stdio":

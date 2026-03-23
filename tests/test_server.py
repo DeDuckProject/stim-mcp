@@ -59,6 +59,48 @@ class TestCircuitStore:
         with pytest.raises(KeyError):
             store.get(cid)
 
+    def test_last_accessed_at_is_set_on_create(self):
+        from datetime import datetime, timezone
+        store = CircuitStore()
+        before = datetime.now(timezone.utc)
+        cid = store.create(stim.Circuit("H 0\nM 0"))
+        after = datetime.now(timezone.utc)
+        assert before <= store.get(cid).last_accessed_at <= after
+
+    def test_touch_resets_last_accessed_at(self):
+        from datetime import datetime, timezone
+        store = CircuitStore()
+        cid = store.create(stim.Circuit("H 0\nM 0"))
+        store._sessions[cid].last_accessed_at = datetime(2000, 1, 1, tzinfo=timezone.utc)
+        store.touch(cid)
+        assert store.get(cid).last_accessed_at > datetime(2000, 1, 2, tzinfo=timezone.utc)
+
+    def test_cleanup_expired_removes_stale_sessions(self):
+        from datetime import datetime, timedelta, timezone
+        store = CircuitStore()
+        cid = store.create(stim.Circuit("H 0\nM 0"))
+        store._sessions[cid].last_accessed_at = datetime(2000, 1, 1, tzinfo=timezone.utc)
+        assert store.cleanup_expired(ttl=timedelta(weeks=1)) == 1
+        with pytest.raises(KeyError):
+            store.get(cid)
+
+    def test_cleanup_expired_keeps_fresh_sessions(self):
+        from datetime import timedelta
+        store = CircuitStore()
+        cid = store.create(stim.Circuit("H 0\nM 0"))
+        assert store.cleanup_expired(ttl=timedelta(weeks=1)) == 0
+        assert store.get(cid) is not None
+
+    def test_cleanup_expired_returns_count(self):
+        from datetime import datetime, timedelta, timezone
+        store = CircuitStore()
+        for _ in range(3):
+            cid = store.create(stim.Circuit("H 0"))
+            store._sessions[cid].last_accessed_at = datetime(2000, 1, 1, tzinfo=timezone.utc)
+        store.create(stim.Circuit("H 0"))  # one fresh session
+        assert store.cleanup_expired(ttl=timedelta(weeks=1)) == 3
+        assert len(store.list_ids()) == 1
+
 
 # ---------------------------------------------------------------------------
 # hello_quantum
