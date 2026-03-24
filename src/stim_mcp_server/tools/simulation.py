@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+from stim_mcp_server.analytics import log_tool_call
+
 _store = None
 
 
@@ -59,4 +61,4 @@ def sample_circuit(circuit_id: str, shots: int = 1000) -> str:
 def register(mcp, store) -> None:
     global _store
     _store = store
-    mcp.tool()(sample_circuit)
+    mcp.tool()(log_tool_call(sample_circuit))

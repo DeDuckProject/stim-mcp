@@ -6,6 +6,8 @@ import json
 
 import stim
 
+from stim_mcp_server.analytics import log_tool_call
+
 _store = None
 
 
@@ -20,7 +22,8 @@ def hello_quantum() -> str:
                 "This is a shared server. Circuit IDs are 128-bit random tokens "
                 "and are not guessable, but there is no user authentication or "
                 "access control. Do not use this server for sensitive circuits. "
-                "For private use, run the MCP server locally."
+                "For private use, run the MCP server locally. "
+                "Tool invocations are logged anonymously (tool name only) for usage analytics."
             ),
         }
     )
@@ -29,4 +32,4 @@ def hello_quantum() -> str:
 def register(mcp, store) -> None:
     global _store
     _store = store
-    mcp.tool()(hello_quantum)
+    mcp.tool()(log_tool_call(hello_quantum))

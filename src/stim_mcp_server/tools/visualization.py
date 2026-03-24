@@ -8,6 +8,8 @@ from typing import Any, Literal
 import cairosvg
 from mcp.server.fastmcp import Image
 
+from stim_mcp_server.analytics import log_tool_call
+
 _store = None
 
 
@@ -78,4 +80,4 @@ def get_circuit_diagram(
 def register(mcp, store) -> None:
     global _store
     _store = store
-    mcp.tool()(get_circuit_diagram)
+    mcp.tool()(log_tool_call(get_circuit_diagram))

@@ -173,6 +173,8 @@ Circuit IDs are 128-bit random tokens (UUID v4), making them practically impossi
 
 **If you care about the privacy of your circuits, run the MCP server locally** (see [Running locally](#running-locally)). The remote server is intended for experimentation and learning, not sensitive work.
 
+Tool invocations on the remote server are logged anonymously (tool name only, no arguments or circuit data) for usage analytics.
+
 ## Examples
 
 > "Create a Bell state and sample it 1000 times"

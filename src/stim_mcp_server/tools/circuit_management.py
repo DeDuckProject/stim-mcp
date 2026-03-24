@@ -6,6 +6,8 @@ import json
 
 import stim
 
+from stim_mcp_server.analytics import log_tool_call
+
 SUPPORTED_TASKS = [
     "repetition_code:memory",
     "surface_code:rotated_memory_x",
@@ -143,6 +145,6 @@ def generate_circuit(
 def register(mcp, store) -> None:
     global _store
     _store = store
-    mcp.tool()(create_circuit)
-    mcp.tool()(append_operation)
-    mcp.tool()(generate_circuit)
+    mcp.tool()(log_tool_call(create_circuit))
+    mcp.tool()(log_tool_call(append_operation))
+    mcp.tool()(log_tool_call(generate_circuit))

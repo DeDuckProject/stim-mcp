@@ -7,6 +7,8 @@ from typing import Literal
 
 import stim
 
+from stim_mcp_server.analytics import log_tool_call
+
 _store = None
 
 
@@ -125,5 +127,5 @@ def inject_noise(
 def register(mcp, store) -> None:
     global _store
     _store = store
-    mcp.tool()(analyze_errors)
-    mcp.tool()(inject_noise)
+    mcp.tool()(log_tool_call(analyze_errors))
+    mcp.tool()(log_tool_call(inject_noise))
