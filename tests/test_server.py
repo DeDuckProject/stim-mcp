@@ -258,13 +258,41 @@ class TestInjectNoise:
         result = json.loads(inject_noise(cid, noise_type="X_ERROR", probability=0.01))
         assert result["success"] is True
 
-    def test_invalid_probability(self):
+    def test_y_error(self):
         cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
-        result = json.loads(inject_noise(cid, probability=0.0))
+        result = json.loads(inject_noise(cid, noise_type="Y_ERROR", probability=0.01))
+        assert result["success"] is True
+        assert result["noisy_circuit_id"] != cid
+
+    def test_z_error(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(inject_noise(cid, noise_type="Z_ERROR", probability=0.01))
+        assert result["success"] is True
+        assert result["noisy_circuit_id"] != cid
+
+    def test_depolarize2(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(inject_noise(cid, noise_type="DEPOLARIZE2", probability=0.01))
+        assert result["success"] is True
+        assert result["noisy_circuit_id"] != cid
+
+    def test_noise_actually_inserted(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(inject_noise(cid, noise_type="DEPOLARIZE1", probability=0.01))
+        from stim_mcp_server.server import _store
+        noisy_text = str(_store.get(result["noisy_circuit_id"]).circuit)
+        assert "DEPOLARIZE1" in noisy_text
+
+    def test_invalid_noise_type(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        result = json.loads(inject_noise(cid, noise_type="INVALID"))  # type: ignore[arg-type]
         assert result["success"] is False
 
-        result2 = json.loads(inject_noise(cid, probability=0.9))
-        assert result2["success"] is False
+    def test_invalid_probability(self):
+        cid = json.loads(create_circuit(BELL_CIRCUIT))["circuit_id"]
+        # negative probability is rejected by stim
+        result = json.loads(inject_noise(cid, probability=-0.1))
+        assert result["success"] is False
 
     def test_missing_circuit(self):
         result = json.loads(inject_noise("ghost"))
