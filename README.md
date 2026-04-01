@@ -2,6 +2,8 @@
 
 MCP server wrapping [Google's Stim](https://github.com/quantumlib/Stim) stabilizer circuit simulator. Wire it up to an LLM and you can build and sample circuits through conversation.
 
+This is an experimental tool for exploration and is in a beta phase. It should be treated as such.
+
 ## Tools
 
 | Tool | Description |
